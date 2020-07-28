@@ -62,8 +62,6 @@ let alpaca = {
   score: 0
 }
 
-
-
 // Ball object
 const ball = {
   x: canvas.width / 2,
@@ -94,8 +92,8 @@ const net = {
   color: "WHITE"
 }
 
-
 //////////////////////////////Draw Functions////////////////////////////////
+
 function drawAlpaca() {
   ctx.drawImage(playerSprite, alpaca.sWidth * alpaca.currentFrame, alpaca.sy, alpaca.sWidth, alpaca.sHeight, alpaca.x, alpaca.y, alpaca.dWidth, alpaca.dHeight);
 }
@@ -136,6 +134,7 @@ function drawText(text, x, y, font) {
 }
 
 //////////////////////////////Ball Functions////////////////////////////////
+
 function ballInit() {
   //put ball in center of canvas
   ball.speed = 5 + round;
@@ -160,6 +159,7 @@ function resetBall() {
 }
 
 //////////////////////////////Controls////////////////////////////////
+
 // listening to the mouse
 canvas.addEventListener("mousemove", getMousePos);
 
@@ -223,6 +223,7 @@ function handleKeyup(e) {
 }
 
 //////////////////////////////Collision Detection////////////////////////////////
+
 // collision detection
 function collision(b, p) {
   p.top = p.y;
@@ -239,6 +240,7 @@ function collision(b, p) {
 }
 
 //////////////////////////////Rendering////////////////////////////////
+
 // render function, the function that does al the drawing
 function render() {
 
@@ -272,6 +274,7 @@ function render() {
 }
 
 //////////////////////////////Gameplay////////////////////////////////
+
 // update function, the function that does all calculations
 function update() {
 
