@@ -10,11 +10,19 @@ height = canvas.height = window.innerHeight;
 document.addEventListener("keydown", handleKeydown, false);
 document.addEventListener("keyup", handleKeyup, false)
 
-// load sounds
+
+//////////////////////////////Variables////////////////////////////////
+//sounds
 let hit = new Audio();
 let wall = new Audio();
 let userScore = new Audio();
 let comScore = new Audio();
+
+// sounds
+hit.src = "sounds/hit.mp3";
+wall.src = "sounds/wall.mp3";
+comScore.src = "sounds/comScore.mp3";
+userScore.src = "sounds/userScore.mp3";
 
 let playing = false;
 let round = 0;
@@ -32,7 +40,7 @@ var playerSprite = new Image();
 playerSprite.addEventListener("load", drawAlpaca);
 playerSprite.src = "images/alpaca.png";
 
-
+//////////////////////////////Objects////////////////////////////////
 let alpaca = {
   //sprite sheet/animation info
   sx: 0,
@@ -55,24 +63,6 @@ let alpaca = {
 }
 
 
-
-function drawAlpaca() {
-
-  ctx.drawImage(playerSprite, alpaca.sWidth * alpaca.currentFrame, alpaca.sy, alpaca.sWidth, alpaca.sHeight, alpaca.x, alpaca.y, alpaca.dWidth, alpaca.dHeight);
-}
-
-function moveAlpaca() {
-  if (up) alpaca.y -= alpaca.speed;
-  if (down) alpaca.y += alpaca.speed;
-  if (left) alpaca.x -= alpaca.speed;
-  if (right) alpaca.x += alpaca.speed;
-}
-
-// sounds
-hit.src = "sounds/hit.mp3";
-wall.src = "sounds/wall.mp3";
-comScore.src = "sounds/comScore.mp3";
-userScore.src = "sounds/userScore.mp3";
 
 // Ball object
 const ball = {
@@ -104,10 +94,10 @@ const net = {
   color: "WHITE"
 }
 
-// draw a rectangle, will be used to draw paddles
-function drawRect(x, y, w, h, color) {
-  ctx.fillStyle = color;
-  ctx.fillRect(x, y, w, h);
+
+//////////////////////////////Draw Functions////////////////////////////////
+function drawAlpaca() {
+  ctx.drawImage(playerSprite, alpaca.sWidth * alpaca.currentFrame, alpaca.sy, alpaca.sWidth, alpaca.sHeight, alpaca.x, alpaca.y, alpaca.dWidth, alpaca.dHeight);
 }
 
 // draw circle, will be used to draw the ball
@@ -119,9 +109,36 @@ function drawArc(x, y, r, color) {
   ctx.fill();
 }
 
+// draw a rectangle, will be used to draw paddles
+function drawRect(x, y, w, h, color) {
+  ctx.fillStyle = color;
+  ctx.fillRect(x, y, w, h);
+}
+
+// draw the net
+function drawNet() {
+  for (let i = 0; i <= canvas.height; i += 15) {
+    if (playing) {
+      if (i < 30 || i > 60) {
+        drawRect(net.x, net.y + i, net.width, net.height, net.color);
+      }
+    } else {
+      drawRect(net.x, net.y + i, net.width, net.height, net.color);
+    }
+  }
+}
+
+// draw text
+function drawText(text, x, y, font) {
+  ctx.fillStyle = "#FFF";
+  ctx.font = font;
+  ctx.fillText(text, x, y);
+}
+
+//////////////////////////////Ball Functions////////////////////////////////
 function ballInit() {
   //put ball in center of canvas
-  ball.speed = 5;
+  ball.speed = 5 + round;
   ball.x = width / 2;
   ball.y = height / 2;
   //create random angle (in radians),
@@ -132,6 +149,17 @@ function ballInit() {
 
 }
 
+// when COM or ALPACA scores, we reset the ball
+//click the canvas to call ballInit()
+function resetBall() {
+  ball.x = canvas.width / 2;
+  ball.y = canvas.height / 2;
+  ball.velocityX = 0;
+  ball.velocityY = 0;
+  ball.speed = 0;
+}
+
+//////////////////////////////Controls////////////////////////////////
 // listening to the mouse
 canvas.addEventListener("mousemove", getMousePos);
 
@@ -139,6 +167,13 @@ function getMousePos(evt) {
   let alpacaPos = canvas.getBoundingClientRect();
 
   alpaca.y = evt.clientY - alpacaPos.top - 75;
+}
+
+function moveAlpaca() {
+  if (up) alpaca.y -= alpaca.speed;
+  if (down) alpaca.y += alpaca.speed;
+  if (left) alpaca.x -= alpaca.speed;
+  if (right) alpaca.x += alpaca.speed;
 }
 
 //control the alpaca with up and down arrows
@@ -187,38 +222,7 @@ function handleKeyup(e) {
   }
 }
 
-
-
-// when COM or ALPACA scores, we reset the ball
-//click the canvas to call ballInit()
-function resetBall() {
-  ball.x = canvas.width / 2;
-  ball.y = canvas.height / 2;
-  ball.velocityX = 0;
-  ball.velocityY = 0;
-  ball.speed = 0;
-}
-
-// draw the net
-function drawNet() {
-  for (let i = 0; i <= canvas.height; i += 15) {
-    if (playing) {
-      if (i < 30 || i > 60) {
-        drawRect(net.x, net.y + i, net.width, net.height, net.color);
-      }
-    } else {
-      drawRect(net.x, net.y + i, net.width, net.height, net.color);
-    }
-  }
-}
-
-// draw text
-function drawText(text, x, y, font) {
-  ctx.fillStyle = "#FFF";
-  ctx.font = font;
-  ctx.fillText(text, x, y);
-}
-
+//////////////////////////////Collision Detection////////////////////////////////
 // collision detection
 function collision(b, p) {
   p.top = p.y;
@@ -234,13 +238,47 @@ function collision(b, p) {
   return p.left < b.right && p.top < b.bottom && p.right > b.left && p.bottom > b.top;
 }
 
+//////////////////////////////Rendering////////////////////////////////
+// render function, the function that does al the drawing
+function render() {
+
+  //game start screen. Once game started score will be rendered
+  if (!playing) {
+    ctx.textAlign = "center";
+    ctx.font = "50px Orbitron";
+    ctx.fillStyle = "#fff";
+    ctx.fillText("Welcome to Pong", width / 2, height / 5);
+    ctx.fillText("click or press spacebar to start!", width / 2, height / 4, 400);
+  } else {
+    // draw the alpaca score to the left
+    drawText(alpaca.score, width / 4, height / 5, "50px Orbitron");
+    // draw the COM score to the right
+    drawText(com.score, 3 * width / 4, height / 5, "50px Orbitron");
+    //display the round number
+    drawText("Round: " + round, width / 2, 57, "20px Orbitron");
+  }
+
+  // draw the net
+  drawNet();
+
+  // draw the alpaca
+  drawAlpaca();
+
+  // draw the COM's paddle
+  drawRect(com.x, com.y, com.width, com.height, com.color);
+
+  // draw the ball
+  drawArc(ball.x, ball.y, ball.radius, ball.color);
+}
+
+//////////////////////////////Gameplay////////////////////////////////
 // update function, the function that does all calculations
 function update() {
 
   //animate alpaca
   if (left) {
     if (alpaca.frameCount % alpaca.frameRate === 0) alpaca.currentFrame--;
-    if (alpaca.currentFrame <= 0) alpaca.currentFrame = alpaca.numberOfFrames -1;
+    if (alpaca.currentFrame <= 0) alpaca.currentFrame = alpaca.numberOfFrames - 1;
     alpaca.frameCount++;
 
   } else {
@@ -275,7 +313,6 @@ function update() {
     userScore.play();
     resetBall();
   }
-
 
   // the ball has a velocity
   ball.x += ball.velocityX;
@@ -324,41 +361,7 @@ function update() {
   }
 }
 
-// render function, the function that does al the drawing
-function render() {
-
-
-  //game start screen. Once game started score will be rendered
-  if (!playing) {
-    ctx.textAlign = "center";
-    ctx.font = "50px Orbitron";
-    ctx.fillStyle = "#fff";
-    ctx.fillText("Welcome to Pong", width / 2, height / 5);
-    ctx.fillText("click or press spacebar to start!", width / 2, height / 4, 400);
-  } else {
-    // draw the alpaca score to the left
-    drawText(alpaca.score, width / 4, height / 5, "50px Orbitron");
-    // draw the COM score to the right
-    drawText(com.score, 3 * width / 4, height / 5, "50px Orbitron");
-    //display the round number
-    drawText("Round: " + round, width / 2, 57, "20px Orbitron");
-  }
-
-
-  // draw the net
-  drawNet();
-
-  // draw the alpaca
-  drawAlpaca();
-
-  // draw the COM's paddle
-  drawRect(com.x, com.y, com.width, com.height, com.color);
-
-  // draw the ball
-  drawArc(ball.x, ball.y, ball.radius, ball.color);
-
-}
-
+//////////////////////////////Game Flow////////////////////////////////
 
 function startGame() {
   requestAnimationFrame(loop);
@@ -372,7 +375,6 @@ function loop() {
   ctx.clearRect(0, 0, width, height);
   render();
   moveAlpaca();
-
   update();
   requestAnimationFrame(loop);
 }
