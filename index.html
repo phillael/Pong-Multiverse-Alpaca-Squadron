@@ -1,14 +1,22 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
-  <head>
-    <meta charset="utf-8">
-    <title>Pong!</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
-  </head>
-  <body>
-    <canvas id="pong"></canvas>
 
-    <script src="pong.js"></script></script>
-  </body>
+<head>
+  <meta charset="utf-8">
+  <title>Pong!</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+
+</head>
+
+<body id="background">
+  <audio id="music-player" loop controls>
+    <source src="sounds/pong.mp3" type="audio/mp3">
+  Your browser does not support the audio element.
+  </audio>
+  <canvas id="pong"></canvas>
+  <script src="pong.js"></script>
+  </script>
+</body>
+
 </html>

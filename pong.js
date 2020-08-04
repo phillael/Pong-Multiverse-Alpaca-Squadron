@@ -1,6 +1,5 @@
 // select canvas element
 const canvas = document.getElementById("pong");
-const background = document.getElementById("background");
 
 // getContext of canvas = methods and properties to draw and do a lot of thing to the canvas
 const ctx = canvas.getContext('2d');
@@ -10,22 +9,33 @@ height = canvas.height = window.innerHeight;
 document.addEventListener("keydown", handleKeydown, false);
 document.addEventListener("keyup", handleKeyup, false)
 
-
 //////////////////////////////Variables////////////////////////////////
 //sounds
-let hit = new Audio();
-let wall = new Audio();
-let userScore = new Audio();
-let comScore = new Audio();
+let alpacaHit = new Audio(),
+  comHit = new Audio(),
+  comScore = new Audio(),
+  sword = new Audio(),
+  userScore = new Audio(),
+  wall = new Audio();
 
-// sounds
-hit.src = "sounds/hit.mp3";
-wall.src = "sounds/wall.mp3";
+// sound source
+alpacaHit.src = "sounds/alpacaHit.mp3";
+comHit.src = "sounds/comHit.mp3";
 comScore.src = "sounds/comScore.mp3";
+sword.src = "sounds/sword.mp3";
+userScore.src = "sounds/userScore";
+wall.src = "sounds/wall.mp3";
+
 userScore.src = "sounds/userScore.mp3";
 
-let playing = false;
-let round = 0;
+//gameflow vars
+let playing = false,
+  round = 0,
+  gameStarted = false,
+  gameOver = false,
+  winner = "",
+  money = 0;
+
 
 // for smoother keydown and keyup movements
 let up = false,
@@ -36,9 +46,35 @@ let up = false,
   run = false,
   attack = false;
 
-var playerSprite = new Image();
+let playerSprite = new Image();
 playerSprite.addEventListener("load", drawAlpaca);
 playerSprite.src = "images/alpaca.png";
+
+let controls = new Image();
+controls.src = "images/arrowKeys.png";
+
+// background gifs
+let outerSpace = "url(https://i.gifer.com/Ir9.gif)",
+  rain = "url(https://i.gifer.com/1pX9.gif)",
+  waves = "url(https://media.giphy.com/media/JoVV55m3KZHdxlpFZ6/giphy.gif)",
+  pixelated = "url(https://media.giphy.com/media/xUA7aTUrRdHzOK7HI4/giphy.gif)",
+  nightFire = "url(https://i.gifer.com/Ijv.gif)",
+  saturn = "url(https://i.gifer.com/1F4J.gif)",
+  spiral = "url(https://i.gifer.com/1j64.gif)",
+  tron = "url(https://media.giphy.com/media/yQ7JbMwf6PqI8/giphy.gif)",
+  creep = "url(https://media.giphy.com/media/cEYC1G6YexEHu/giphy.gif)",
+  spaceCat = "url(https://media.giphy.com/media/bj09BK2BzLLQk/giphy.gif)",
+  laughter = "url(https://media.giphy.com/media/Wiv9wVaAhNTO0/giphy.gif)";
+
+
+
+
+
+let backgrounds = [outerSpace, outerSpace, rain, waves, pixelated, nightFire,
+  saturn, spiral, tron, spaceCat, laughter, creep]
+
+
+
 
 //////////////////////////////Objects////////////////////////////////
 let alpaca = {
@@ -56,10 +92,11 @@ let alpaca = {
   frameRate: 7, //higher number is slower
   currentFrame: 0,
   //gameplay
-  speed: 5,
-  width: 70,
+  speed: 8,
+  width: 50,
   height: 90,
-  score: 0
+  score: 0,
+  isPlayer: true
 }
 
 // Ball object
@@ -75,7 +112,7 @@ const ball = {
 
 // COM Paddle
 const com = {
-  x: canvas.width - 40, // - width of paddle
+  x: canvas.width - 60, // - width of paddle
   y: (canvas.height - 100) / 2, // -100 the height of paddle
   width: 10,
   height: 100,
@@ -120,6 +157,10 @@ function drawNet() {
       if (i < 30 || i > 60) {
         drawRect(net.x, net.y + i, net.width, net.height, net.color);
       }
+    } else if (gameOver || !playing) {
+      if (i < 135 || i > 280) {
+        drawRect(net.x, net.y + i, net.width, net.height, net.color);
+      }
     } else {
       drawRect(net.x, net.y + i, net.width, net.height, net.color);
     }
@@ -131,6 +172,12 @@ function drawText(text, x, y, font) {
   ctx.fillStyle = "#FFF";
   ctx.font = font;
   ctx.fillText(text, x, y);
+}
+
+
+
+function drawControls() {
+  ctx.drawImage(controls, 0, height - 100, 100, 100)
 }
 
 //////////////////////////////Ball Functions////////////////////////////////
@@ -158,16 +205,16 @@ function resetBall() {
   ball.speed = 0;
 }
 
-//////////////////////////////Controls////////////////////////////////
+//////////////////////////////Audio functions////////////////////////////////
 
-// listening to the mouse
-canvas.addEventListener("mousemove", getMousePos);
-
-function getMousePos(evt) {
-  let alpacaPos = canvas.getBoundingClientRect();
-
-  alpaca.y = evt.clientY - alpacaPos.top - 75;
+//starts the music when gameplay starts
+function playSong() {
+  let audio = document.getElementById("music-player");
+  audio.play();
 }
+
+
+//////////////////////////////Controls////////////////////////////////
 
 function moveAlpaca() {
   if (up) alpaca.y -= alpaca.speed;
@@ -178,26 +225,40 @@ function moveAlpaca() {
 
 //control the alpaca with up and down arrows
 function handleKeydown(e) {
+  //down or up?
   if (e.keyCode == 40) {
     down = true;
-    if (!attack) alpaca.sy = 120;
+    if (alpaca.sy === 0) alpaca.sy = 120;
   } else if (e.keyCode == 38) {
     up = true;
-    if (!attack) alpaca.sy = 120;
-  } else if (e.keyCode == 37) {
+    if (alpaca.sy === 0) alpaca.sy = 120;
+  }
+  //left or right?
+  if (e.keyCode == 37) {
     left = true;
     if (!attack) alpaca.sy = 480;
+    if (attack) alpaca.sy = 240;
   } else if (e.keyCode == 39) {
     right = true;
     if (!attack) alpaca.sy = 120;
-  } else if (e.keyCode == 32) {
-    //reset the ball with spacebar if you want
-    if (!playing) {
+  }
+  //is space bar down?
+  if (e.keyCode == 32) {
+    //space bar starts the game and is the attack button
+    if (gameOver) {
+      restartGame();
+    }
+    if (!gameStarted) {
       startGame();
     } else {
+      if (!attack) alpaca.currentFrame = 0;
       attack = true;
+      playing && sword.play();
+
     }
-  } else if (e.keyCode == 13) {
+  }
+  //is return key down?
+  if (e.keyCode == 13) {
     ballInit();
   }
   e.preventDefault();
@@ -216,25 +277,39 @@ function handleKeyup(e) {
   } else if (event.keyCode == 39) {
     right = false;
     alpaca.sy = 0;
-  } else if (e.keyCode == 32) {
-    attack = false;
-    alpaca.sy = 0;
+    //spacebar
   }
 }
+
+
 
 //////////////////////////////Collision Detection////////////////////////////////
 
 // collision detection
 function collision(b, p) {
-  p.top = p.y;
-  p.bottom = p.y + p.height;
-  p.left = p.x;
-  p.right = p.x + p.width;
+  //account for width and height of player sprite
+  if (ball.x < width / 2) {
+    p.top = p.y + 40;
+    p.bottom = p.y + p.height + 15;
+    //account for width of player sprite
+    p.left = p.x + 40;
+    p.right = p.x + p.width + 40;
 
-  b.top = b.y - b.radius;
-  b.bottom = b.y + b.radius;
-  b.left = b.x - b.radius;
-  b.right = b.x + b.radius;
+    b.top = b.y - b.radius;
+    b.bottom = b.y + b.radius;
+    b.left = b.x - b.radius;
+    b.right = b.x + b.radius;
+  } else {
+    p.top = p.y;
+    p.bottom = p.y + p.height;
+    p.left = p.x;
+    p.right = p.x + p.width;
+
+    b.top = b.y - b.radius;
+    b.bottom = b.y + b.radius;
+    b.left = b.x - b.radius;
+    b.right = b.x + b.radius;
+  }
 
   return p.left < b.right && p.top < b.bottom && p.right > b.left && p.bottom > b.top;
 }
@@ -244,13 +319,34 @@ function collision(b, p) {
 // render function, the function that does al the drawing
 function render() {
 
-  //game start screen. Once game started score will be rendered
+  //change background depending on Round
+  if (gameOver) {
+    //different gameOver screen depending on winner
+    winner === "Alpaca" ?
+    document.getElementById("background").style.backgroundImage = backgrounds[11] :
+    document.getElementById("background").style.backgroundImage = backgrounds[10];
+  } else {
+    //backgrounds selected with the round number
+    document.getElementById("background").style.backgroundImage = backgrounds[`${round}`];
+  }
+
   if (!playing) {
-    ctx.textAlign = "center";
-    ctx.font = "50px Orbitron";
-    ctx.fillStyle = "#fff";
-    ctx.fillText("Welcome to Pong", width / 2, height / 5);
-    ctx.fillText("click or press spacebar to start!", width / 2, height / 4, 400);
+    // Gameover screen
+    if (gameOver) {
+      ctx.textAlign = "center";
+      //gameover message depends on winner
+      drawText(`${winner} is the winner!`, width / 2, 180, "55px Orbitron");
+      drawText("- - - click or press spacebar to play again! - - -", width / 2, 270, "25px Orbitron");
+      money > 0 ?
+        drawText(`You have earned $${money.toFixed(2)} dollars!!`, width / 2, 230, "40px Orbitron") :
+        drawText(`You just lost $${-money.toFixed(2)} dollars!!`, width / 2, 230, "40px Orbitron")
+    } else {
+      // Start screen
+      ctx.textAlign = "center";
+      drawText("Alpaca Pong Mutiverse Wars", width / 2, 185, "60px Orbitron");
+      drawText("- - - click or press spacebar to play - - -", width / 2, 245, "40px Orbitron");
+    }
+
   } else {
     // draw the alpaca score to the left
     drawText(alpaca.score, width / 4, height / 5, "50px Orbitron");
@@ -258,6 +354,10 @@ function render() {
     drawText(com.score, 3 * width / 4, height / 5, "50px Orbitron");
     //display the round number
     drawText("Round: " + round, width / 2, 57, "20px Orbitron");
+    //Controls
+    drawText("ATTACK : spacebar", 193, height - 43, "15px Orbitron");
+    drawText("START BALL : return", 200, height - 23, "15px Orbitron");
+    drawText(`Score ${5 -alpaca.score} points to win!`, (width / 2) - 100, height - 23, "15px Orbitron");
   }
 
   // draw the net
@@ -266,6 +366,13 @@ function render() {
   // draw the alpaca
   drawAlpaca();
 
+  // draw arrow Controls
+  drawControls();
+
+  //draw the overall score
+
+  drawText(`Money: $${money.toFixed(2)}`, 100, 50, "15px Orbitron");
+
   // draw the COM's paddle
   drawRect(com.x, com.y, com.width, com.height, com.color);
 
@@ -273,12 +380,14 @@ function render() {
   drawArc(ball.x, ball.y, ball.radius, ball.color);
 }
 
+
+
 //////////////////////////////Gameplay////////////////////////////////
 
 // update function, the function that does all calculations
 function update() {
 
-  //animate alpaca
+  // Animate alpaca!
   if (left) {
     if (alpaca.frameCount % alpaca.frameRate === 0) alpaca.currentFrame--;
     if (alpaca.currentFrame <= 0) alpaca.currentFrame = alpaca.numberOfFrames - 1;
@@ -296,6 +405,11 @@ function update() {
     idle = true;
   }
 
+  if (attack && alpaca.currentFrame > 6) {
+    attack = false;
+    alpaca.sy = 0;
+  }
+
   // move from top of screen to bottom and vice versa
   if (alpaca.y < -100) alpaca.y = height;
   if (alpaca.y > height + 100) alpaca.y = 0;
@@ -307,15 +421,20 @@ function update() {
   if (ball.x - ball.radius < 0) {
     com.score++;
     round++;
+    money -= 1198.53
     comScore.play();
     resetBall();
 
   } else if (ball.x + ball.radius > canvas.width) {
     alpaca.score++;
     round++;
+    money += 1328.47
     userScore.play();
     resetBall();
   }
+
+  //Winning or losing
+  if (alpaca.score > 4 || com.score > 4) gameEnd();
 
   // the ball has a velocity
   ball.x += ball.velocityX;
@@ -336,8 +455,10 @@ function update() {
 
   // if the ball hits a paddle
   if (collision(ball, player)) {
-    // play sound
-    hit.play();
+
+    // play sound depending on player
+    player === alpaca ? alpacaHit.play() : comHit.play();
+
     // we check where the ball hits the paddle
     let collidePoint = (ball.y - (player.y + player.height / 2));
     // normalize the value of collidePoint, we need to get numbers between -1 and 1.
@@ -350,28 +471,45 @@ function update() {
     // Math.PI/4 = 45degrees
     let angleRad = (Math.PI / 4) * collidePoint;
 
+    // speed up the ball everytime a paddle hits it.
+    if (attack && player.isPlayer) {
+      ball.speed += 5;
+    } else {
+      ball.speed += 1;
+    }
+
     // change the X and Y velocity direction
     let direction = (ball.x + ball.radius < canvas.width / 2) ? 1 : -1;
     ball.velocityX = direction * ball.speed * Math.cos(angleRad);
     ball.velocityY = ball.speed * Math.sin(angleRad);
 
-    // speed up the ball everytime a paddle hits it.
-    if (ball.x < width / 2) {
-      ball.speed += 10;
-    } else {
-      ball.speed += 1;
-    }
+
   }
 }
 
 //////////////////////////////Game Flow////////////////////////////////
 
+render();
+canvas.addEventListener("click", startGame);
+
 function startGame() {
+  gameStarted = true;
   requestAnimationFrame(loop);
   canvas.removeEventListener("click", startGame);
   canvas.addEventListener("click", ballInit)
   playing = true;
   round++;
+  playSong();
+}
+
+function restartGame() {
+  playing = true;
+  gameOver = false;
+  round = 1
+  alpaca.score = 0;
+  com.score = 0;
+  alpaca.speed = 8;
+  ball.speed = 7;
 }
 
 function loop() {
@@ -382,5 +520,9 @@ function loop() {
   requestAnimationFrame(loop);
 }
 
-render();
-canvas.addEventListener("click", startGame);
+function gameEnd() {
+  playing = false;
+  gameOver = true
+  round = 0;
+  alpaca.score > com.score ? winner = "Alpaca" : winner = "The rectangle thing";
+}

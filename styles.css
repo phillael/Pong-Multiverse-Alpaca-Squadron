@@ -1,4 +1,16 @@
-body {
+#background {
   background-image: url("https://i.gifer.com/Ir9.gif");
   background-size: cover;
+  -webkit-transition: background 2s linear;
+-moz-transition: background 2s linear;
+-o-transition: background 25s linear;
+-ms-transition: background 2s linear;
+transition: background 2s linear;
   }
+
+#music-player {
+  position: absolute;
+  top: 0;
+  right: 0;
+  opacity: 30%;
+}
