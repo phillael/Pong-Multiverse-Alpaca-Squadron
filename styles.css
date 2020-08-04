@@ -14,3 +14,33 @@ transition: background 2s linear;
   right: 0;
   opacity: 30%;
 }
+
+#song-title {
+  color: white;
+  font-family: "Orbitron";
+  font-size: 12px;
+  position: absolute;
+  top: 55px;
+  right: 58px;
+  opacity: 30%;
+}
+
+#copyright {
+  color: white;
+  font-family: "Orbitron";
+  font-size: 12px;
+  position: absolute;
+  bottom: 0;
+  right: 5px;
+  opacity: 40%;
+}
+
+#website {
+  color: white;
+  font-family: "Orbitron";
+  font-size: 12px;
+  position: absolute;
+  bottom: 35px;
+  right: 5px;
+  opacity: 40%;
+  }

@@ -71,7 +71,8 @@ let outerSpace = "url(https://i.gifer.com/Ir9.gif)",
 
 
 let backgrounds = [outerSpace, outerSpace, rain, waves, pixelated, nightFire,
-  saturn, spiral, tron, spaceCat, laughter, creep]
+  saturn, spiral, tron, spaceCat, laughter, creep
+]
 
 
 
@@ -323,8 +324,8 @@ function render() {
   if (gameOver) {
     //different gameOver screen depending on winner
     winner === "Alpaca" ?
-    document.getElementById("background").style.backgroundImage = backgrounds[11] :
-    document.getElementById("background").style.backgroundImage = backgrounds[10];
+      document.getElementById("background").style.backgroundImage = backgrounds[11] :
+      document.getElementById("background").style.backgroundImage = backgrounds[10];
   } else {
     //backgrounds selected with the round number
     document.getElementById("background").style.backgroundImage = backgrounds[`${round}`];
@@ -337,13 +338,15 @@ function render() {
       //gameover message depends on winner
       drawText(`${winner} is the winner!`, width / 2, 180, "55px Orbitron");
       drawText("- - - click or press spacebar to play again! - - -", width / 2, 270, "25px Orbitron");
+      drawText("Music and sound design by Phill Aelony!!", width / 2, height - 50, "25px Orbitron")
       money > 0 ?
         drawText(`You have earned $${money.toFixed(2)} dollars!!`, width / 2, 230, "40px Orbitron") :
         drawText(`You just lost $${-money.toFixed(2)} dollars!!`, width / 2, 230, "40px Orbitron")
+
     } else {
       // Start screen
       ctx.textAlign = "center";
-      drawText("Alpaca Pong Mutiverse Wars", width / 2, 185, "60px Orbitron");
+      drawText("Pong Multiverse Alpaca Squadron", width / 2, 185, "60px Orbitron");
       drawText("- - - click or press spacebar to play - - -", width / 2, 245, "40px Orbitron");
     }
 
@@ -369,15 +372,15 @@ function render() {
   // draw arrow Controls
   drawControls();
 
-  //draw the overall score
-
-  drawText(`Money: $${money.toFixed(2)}`, 100, 50, "15px Orbitron");
-
   // draw the COM's paddle
   drawRect(com.x, com.y, com.width, com.height, com.color);
 
   // draw the ball
   drawArc(ball.x, ball.y, ball.radius, ball.color);
+
+  //Keep track of your money!
+  drawText(`Money: $${money.toFixed(2)}`, 100, 50, "15px Orbitron");
+
 }
 
 
