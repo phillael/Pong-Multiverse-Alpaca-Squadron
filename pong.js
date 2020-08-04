@@ -337,11 +337,11 @@ function render() {
       ctx.textAlign = "center";
       //gameover message depends on winner
       drawText(`${winner} is the winner!`, width / 2, 180, "55px Orbitron");
-      drawText("- - - click or press spacebar to play again! - - -", width / 2, 270, "25px Orbitron");
-      drawText("Music and sound design by Phill Aelony!!", width / 2, height - 50, "25px Orbitron")
+      drawText("- - - click or press spacebar to play again - - -", width / 2, 270, "25px Orbitron");
+      drawText("Music and sound design by Phill Aelony", width / 2, height - 50, "25px Orbitron")
       money > 0 ?
-        drawText(`You have earned $${money.toFixed(2)} dollars!!`, width / 2, 230, "40px Orbitron") :
-        drawText(`You just lost $${-money.toFixed(2)} dollars!!`, width / 2, 230, "40px Orbitron")
+        drawText(`You have earned $${money.toFixed(2)} dollars`, width / 2, 230, "40px Orbitron") :
+        drawText(`You just lost $${-money.toFixed(2)} dollars`, width / 2, 230, "40px Orbitron")
 
     } else {
       // Start screen
